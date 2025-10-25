@@ -32,29 +32,43 @@ app.get('/', (req, res) => {
     });
 });
 
-// three dynamic routes ------------------
+// three dynamic routes ----------------------------------------------------
 // by location
 app.get('/location/:loc', (req, res) => {
-    let sql = '';
+    let sql = 'SELECT * FROM Earthquakes WHERE locationSource == ?';
     db.all(sql, [req.params.loc], (err, rows) => {
+        if (err) {
+            res.status(500).type('txt').send('SQL Error');
+        }
+        else {
 
+        }
     });
-
 });
 
 // by magnitude
 app.get('/magnitude/:mag', (req, res) => {
-    let sql = '';
+    let sql = 'SELECT * FROM Earthquakes WHERE mag == ?';
     db.all(sql, [req.params.mag], (err, rows) => {
+        if (err) {
+            res.status(500).type('txt').send('SQL Error');
+        }
+        else {
 
+        }
     });
 });
 
 // by depth
 app.get('/depth/:dep', (req, res) => {
-    let sql = '';
+    let sql = 'SELECT * FROM Earthquakes WHERE depth == ?';
     db.all(sql, [req.params.dep], (err, rows) => {
+        if (err) {
+            res.status(500).type('txt').send('SQL Error');
+        }
+        else {
 
+        }
     });
 });
 
