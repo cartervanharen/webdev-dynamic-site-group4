@@ -3,11 +3,11 @@
     "description": "Dynamic Server",
     "version": "1.0.0",
     "author": {
-        "name": "",
-        "email": ""
+        "name": "Carter VanHaren",
+        "email": "carter.vanharen@gmail.com"
     },
-    "contributors": [],
-    "repository": {},
+    "contributors": ["Anastasia Iogova", "Zoe Thoma"],
+    "repository": {"url": "https://github.com/cartervanharen/dynamic_server"},
     "dependencies": {
         "express": "^5.1.0",
         "sqlite3": "^5.1.7"
