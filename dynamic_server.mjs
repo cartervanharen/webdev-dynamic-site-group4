@@ -25,23 +25,37 @@ const db = new sqlite3.Database('./earthquakes.sqlite3', sqlite3.OPEN_READONLY, 
 
 // get the home page
 app.get('/', (req, res) => {
-
+    // read the template
+    fs.readFile(path.join(template, 'index.html'), (err, data) => {            
+        // send response
+        res.status(200).type('html').send(data);
+    });
 });
 
 // three dynamic routes ------------------
 // by location
-app.get('/location/:location', (req, res) => {
+app.get('/location/:loc', (req, res) => {
+    let sql = '';
+    db.all(sql, [req.params.loc], (err, rows) => {
+
+    });
 
 });
 
 // by magnitude
-app.get('/magnitude/:magnitude', (req, res) => {
-    
+app.get('/magnitude/:mag', (req, res) => {
+    let sql = '';
+    db.all(sql, [req.params.mag], (err, rows) => {
+
+    });
 });
 
 // by depth
-app.get('/depth/:depth', (req, res) => {
-    
+app.get('/depth/:dep', (req, res) => {
+    let sql = '';
+    db.all(sql, [req.params.dep], (err, rows) => {
+
+    });
 });
 
 app.listen(port, () => {
