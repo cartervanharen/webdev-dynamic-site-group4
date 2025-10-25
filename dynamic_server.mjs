@@ -25,8 +25,25 @@ const db = new sqlite3.Database('./earthquakes.sqlite3', sqlite3.OPEN_READONLY, 
 
 // get the home page
 app.get('/', (req, res) => {
-    // read the template
-    fs.readFile(path.join(template, 'index.html'), (err, data) => {            
+    // list out locations
+
+    // list out magnitudes
+
+    // list out depths
+
+    /*
+     db.all(sql, [], (err, rows) => {
+        if (err) {
+            res.status(500).type('txt').send('SQL Error');
+        }
+        else {
+
+        }
+     });*/
+
+
+    // basic test to see if its working
+     fs.readFile(path.join(template, 'index.html'), {encoding: 'utf8'}, (err, data) => {            
         // send response
         res.status(200).type('html').send(data);
     });
