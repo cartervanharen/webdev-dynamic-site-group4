@@ -31,22 +31,51 @@ app.get('/', (req, res) => {
 
     // list out depths
 
-    /*
-     db.all(sql, [], (err, rows) => {
+    let sql = 'SELECT DISTINCT locationSource FROM Earthquakes';
+    console.log(sql);
+
+    let sql2 = 'SELECT DISCTINCT mag FROM Earthquakes';
+
+    let sql3 = 'SELECT DISTINCT depth FROM Earthquakes';
+    
+    db.all(sql, [], (err, rows) => {
         if (err) {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
 
+            fs.readFile(path.join(template, 'index.html'), {encoding: 'utf8'}, (err, data) => {
+                let li_string = '';
+                for (let i=0; i < rows.length; i++) {
+                    li_string += '<li><a href="/location/' + rows[i].locationSource + '">' + rows[i].locationSource + '</a></li>';
+                }
+
+                let li_string2 = '';
+                for (let i=0; i < rows.length; i++) {
+                    li_string2 += '<li><a href="/magnitude/' + rows[i].mag + '">' + rows[i].mag + '</a></li>';
+                }
+
+                let li_string3 = '';
+                for (let i=0; i < rows.length; i++) {
+                    li_string3 += '<li><a href="/depth/' + rows[i].depth + '">' + rows[i].depth + '</a></li>';
+                }
+
+
+                let response = data.replace('$$$LOCATION_LIST$$$', li_string);
+                response = response.replace('$$$MAGNITUDE_LIST$$$', li_string2);
+                response = response.replace('$$$DEPTH_LIST$$$', li_string3);
+                res.status(200).type('html').send(response);
+            });
         }
-     });*/
+     });
 
 
+     /*
     // basic test to see if its working
      fs.readFile(path.join(template, 'index.html'), {encoding: 'utf8'}, (err, data) => {            
         // send response
         res.status(200).type('html').send(data);
-    });
+    });*/
 });
 
 // three dynamic routes ----------------------------------------------------
