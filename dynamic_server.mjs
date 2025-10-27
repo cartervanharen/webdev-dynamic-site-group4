@@ -111,6 +111,18 @@ app.get('/location/:loc', (req, res) => {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
+            
+            fs.readFile(path.join(template, 'location.html'), {encoding: 'utf8'}, (err, data) => {
+                let tr_string = '';
+                let location = '';
+                for (let i=0; i < rows.length; i++) {
+                    tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].magnitude + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td></tr>';
+                    location = rows[i].locationSource;
+                }
+                let response = data.replace('$$$LOCATION_ROWS$$$', tr_string);
+                response = response.replace('$$$LOCATION$$$', location);
+                res.status(200).type('html').send(response);
+            });
 
         }
     });
