@@ -33,19 +33,20 @@ app.get('/', (req, res) => {
 
     let sendResponse = function () {
         fs.readFile(path.join(template, 'index.html'), {encoding: 'utf8'}, (err, data) => {
+            
             let li_string = '';
-            for (let i=0; i < rows.length; i++) {
-                li_string += '<li><a href="/location/' + rows[i].locationSource + '">' + rows[i].locationSource + '</a></li>';
+            for (let i=0; i < dbRows1.length; i++) {
+                li_string += '<li><a href="/location/' + dbRows1[i].locationSource + '">' + dbRows1[i].locationSource + '</a></li>';
             }
 
             let li_string2 = '';
-            for (let i=0; i < rows.length; i++) {
-                li_string2 += '<li><a href="/magnitude/' + rows[i].mag + '">' + rows[i].mag + '</a></li>';
+            for (let i=0; i < dbRows2.length; i++) {
+                li_string2 += '<li><a href="/magnitude/' + dbRows2[i].mag + '">' + dbRows2[i].mag + '</a></li>';
             }
 
             let li_string3 = '';
-            for (let i=0; i < rows.length; i++) {
-                li_string3 += '<li><a href="/depth/' + rows[i].depth + '">' + rows[i].depth + '</a></li>';
+            for (let i=0; i < dbRows3.length; i++) {
+                li_string3 += '<li><a href="/depth/' + dbRows3[i].depth + '">' + dbRows3[i].depth + '</a></li>';
             }
                       
             response = data.replace('$$$LOCATION_LIST$$$', li_string);
@@ -77,7 +78,7 @@ app.get('/', (req, res) => {
         else {
             dbRows1 = rows;
             asyncCount++;
-            if (asyncCount == 4) {
+            if (asyncCount == 3) {
                 sendResponse();
             }
         }
@@ -89,9 +90,9 @@ app.get('/', (req, res) => {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
-            dbRows1 = rows;
+            dbRows2 = rows;
             asyncCount++;
-            if (asyncCount == 4) {
+            if (asyncCount == 3) {
                 sendResponse();
             }
         }
@@ -103,9 +104,9 @@ app.get('/', (req, res) => {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
-            dbRows1 = rows;
+            dbRows3 = rows;
             asyncCount++;
-            if (asyncCount == 4) {
+            if (asyncCount == 3) {
                 sendResponse();
             }
         }
