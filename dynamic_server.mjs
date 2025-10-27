@@ -156,6 +156,18 @@ app.get('/magnitude/:mag', (req, res) => {
         }
         else {
 
+            fs.readFile(path.join(template, 'magnitude.html'), {encoding: 'utf8'}, (err, data) => {
+                let tr_string = '';
+                let magnitude = '';
+                for (let i=0; i < rows.length; i++) {
+                    tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
+                    magnitude = rows[i].mag;
+                }
+                let response = data.replace('$$$MAGNITUDE_ROWS$$$', tr_string);
+                response = response.replace('$$$MAGNITUDE$$$', magnitude);
+                res.status(200).type('html').send(response);
+            });
+
         }
     });
 });
@@ -168,6 +180,18 @@ app.get('/depth/:dep', (req, res) => {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
+
+             fs.readFile(path.join(template, 'depth.html'), {encoding: 'utf8'}, (err, data) => {
+                let tr_string = '';
+                let depth = '';
+                for (let i=0; i < rows.length; i++) {
+                    tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].magnitude + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
+                    depth = rows[i].mag;
+                }
+                let response = data.replace('$$$DEPTH_ROWS$$$', tr_string);
+                response = response.replace('$$$DEPTH$$$', depth);
+                res.status(200).type('html').send(response);
+            });
 
         }
     });
