@@ -135,7 +135,7 @@ app.get('/location/:loc', (req, res) => {
                 let tr_string = '';
                 let location = '';
                 for (let i=0; i < rows.length; i++) {
-                    tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].magnitude + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td></tr>';
+                    tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td></tr>';
                     location = rows[i].locationSource;
                 }
                 let response = data.replace('$$$LOCATION_ROWS$$$', tr_string);
@@ -185,7 +185,7 @@ app.get('/depth/:dep', (req, res) => {
                 let tr_string = '';
                 let depth = '';
                 for (let i=0; i < rows.length; i++) {
-                    tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].magnitude + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
+                    tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
                     depth = rows[i].mag;
                 }
                 let response = data.replace('$$$DEPTH_ROWS$$$', tr_string);
