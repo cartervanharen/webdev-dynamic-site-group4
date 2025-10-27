@@ -25,6 +25,36 @@ const db = new sqlite3.Database('./earthquakes.sqlite3', sqlite3.OPEN_READONLY, 
 
 // get the home page
 app.get('/', (req, res) => {
+    let asyncCount = 0;
+    let dbRows1 = null;
+    let dbRows2 = null;
+    let dbRows3 = null;
+    let fileData = null;
+
+    let sendResponse = function () {
+        fs.readFile(path.join(template, 'index.html'), {encoding: 'utf8'}, (err, data) => {
+            let li_string = '';
+            for (let i=0; i < rows.length; i++) {
+                li_string += '<li><a href="/location/' + rows[i].locationSource + '">' + rows[i].locationSource + '</a></li>';
+            }
+
+            let li_string2 = '';
+            for (let i=0; i < rows.length; i++) {
+                li_string2 += '<li><a href="/magnitude/' + rows[i].mag + '">' + rows[i].mag + '</a></li>';
+            }
+
+            let li_string3 = '';
+            for (let i=0; i < rows.length; i++) {
+                li_string3 += '<li><a href="/depth/' + rows[i].depth + '">' + rows[i].depth + '</a></li>';
+            }
+                      
+            response = data.replace('$$$LOCATION_LIST$$$', li_string);
+            response = response.replace('$$$MAGNITUDE_LIST$$$', li_string2);
+            response = response.replace('$$$DEPTH_LIST$$$', li_string3);
+            res.status(200).type('html').send(response);
+        });
+    }
+
     // list out locations
 
     // list out magnitudes
@@ -45,15 +75,11 @@ app.get('/', (req, res) => {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
-
-            fs.readFile(path.join(template, 'index.html'), {encoding: 'utf8'}, (err, data) => {
-                let li_string = '';
-                for (let i=0; i < rows.length; i++) {
-                    li_string += '<li><a href="/location/' + rows[i].locationSource + '">' + rows[i].locationSource + '</a></li>';
-                }
-
-                response = data.replace('$$$LOCATION_LIST$$$', li_string);
-            });
+            dbRows1 = rows;
+            asyncCount++;
+            if (asyncCount == 4) {
+                sendResponse();
+            }
         }
      });
 
@@ -63,15 +89,11 @@ app.get('/', (req, res) => {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
-            fs.readFile(path.join(template, 'index.html'), {encoding: 'utf8'}, (err, data) => {
-                let li_string2 = '';
-                for (let i=0; i < rows.length; i++) {
-                    li_string2 += '<li><a href="/magnitude/' + rows[i].mag + '">' + rows[i].mag + '</a></li>';
-                }
-                // console.log(li_string2);
-
-                response = response.replace('$$$MAGNITUDE_LIST$$$', li_string2);
-            });
+            dbRows1 = rows;
+            asyncCount++;
+            if (asyncCount == 4) {
+                sendResponse();
+            }
         }
      });
 
@@ -81,15 +103,11 @@ app.get('/', (req, res) => {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
-            fs.readFile(path.join(template, 'index.html'), {encoding: 'utf8'}, (err, data) => {
-                                let li_string3 = '';
-                for (let i=0; i < rows.length; i++) {
-                    li_string3 += '<li><a href="/depth/' + rows[i].depth + '">' + rows[i].depth + '</a></li>';
-                }
-                
-                response = response.replace('$$$DEPTH_LIST$$$', li_string3);
-                res.status(200).type('html').send(response);
-            });
+            dbRows1 = rows;
+            asyncCount++;
+            if (asyncCount == 4) {
+                sendResponse();
+            }
         }
      });
 
