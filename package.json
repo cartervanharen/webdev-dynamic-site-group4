@@ -2,6 +2,10 @@
     "name": "dynamic_server",
     "description": "Dynamic Server",
     "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "start": "node dynamic_server.mjs"
+    },
     "author": {
         "name": "Carter VanHaren",
         "email": "carter.vanharen@gmail.com"
