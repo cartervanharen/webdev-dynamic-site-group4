@@ -1,5 +1,14 @@
+html {
+  font-size: 62.5%;
+}
+
+body {
+    font-size: 2rem;
+}
+
 h1 {
     color: purple;
+    font-size: 4rem;
 }
 
 th, td {
@@ -11,7 +20,17 @@ table {
     border-collapse: collapse;
     color:black;
     font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    font-size:1rem;
     font-style:normal;
     font-weight:bold;
+}
+
+.home a {
+    background-color: #e8e6ef;
+    padding: 1rem;
+}
+
+.home a:hover {
+    background-color: #057a51;
+    color: rgb(255, 255, 255);
+    padding: 1rem;
 }
