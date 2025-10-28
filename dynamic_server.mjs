@@ -122,10 +122,10 @@ app.get('/location/:loc', (req, res) => {
         else {
 
             // find the index of the current location in that ordered list
-            let index = allLocations.findIndex(row => row.locationSource === currentLocation);
+            let indexOfCurrentLocation = allLocations.findIndex(row => row.locationSource === currentLocation);
 
             // if the requested location is not in the list -> 404
-            if (index === -1) {
+            if (indexOfCurrentLocation === -1) {
                 res.status(404).type('txt').send('Location not found: ' + currentLocation);
                 return;
             }
@@ -134,18 +134,18 @@ app.get('/location/:loc', (req, res) => {
             let nextLoc;
 
             // figure out previous location
-            if (index > 0) {
+            if (indexOfCurrentLocation > 0) {
                 // if we are NOT at the first item, just go one back
-                prevLoc = allLocations[index - 1].locationSource;
+                prevLoc = allLocations[indexOfCurrentLocation - 1].locationSource;
             } else {
                 // if we ARE at the first item, wrap around to the last one
                 prevLoc = allLocations[allLocations.length - 1].locationSource;
             }
 
             // figure out next location
-            if (index < allLocations.length - 1) {
+            if (indexOfCurrentLocation < allLocations.length - 1) {
                 // if we are NOT at the last item, just go one forward
-                nextLoc = allLocations[index + 1].locationSource;
+                nextLoc = allLocations[indexOfCurrentLocation + 1].locationSource;
             } else {
                 // if we ARE at the last item, wrap around to the first one
                 nextLoc = allLocations[0].locationSource;
@@ -186,28 +186,77 @@ app.get('/location/:loc', (req, res) => {
 
 // by magnitude
 app.get('/magnitude/:mag', (req, res) => {
-    let currentMagnitude = req.params.mag;
-    let sql = 'SELECT * FROM Earthquakes WHERE mag == ?';
-    db.all(sql, [currentMagnitude], (err, rows) => {
+    let currentMagnitude = parseFloat(req.params.mag);
+
+    let sqlAllMag = 'SELECT DISTINCT mag FROM Earthquakes LIMIT 50';
+    
+    // list out magnitudes
+     db.all(sqlAllMag, [], (err, allMagnitudes) => {
         if (err) {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
+            // find the index of the current location in that ordered list
+            let indexOfCurrentMagnitude = allMagnitudes.findIndex(row => row.mag === currentMagnitude);
 
-            fs.readFile(path.join(template, 'magnitude.html'), {encoding: 'utf8'}, (err, data) => {
-                let tr_string = '';
-                let magnitude = '';
-                for (let i=0; i < rows.length; i++) {
-                    tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
-                    magnitude = rows[i].mag;
+            // if the requested location is not in the list -> 404
+            if (indexOfCurrentMagnitude === -1) {
+                res.status(404).type('txt').send('Magnitude not found: ' + currentMagnitude);
+                return;
+            }
+
+            let prevMag;
+            let nextMag;
+
+            // figure out previous location
+            if (indexOfCurrentMagnitude > 0) {
+                // if we are NOT at the first item, just go one back
+                prevMag = allMagnitudes[indexOfCurrentMagnitude - 1].mag;
+            } else {
+                // if we ARE at the first item, wrap around to the last one
+                prevMag = allMagnitudes[allMagnitudes.length - 1].mag;
+            }
+
+            // figure out next location
+            if (indexOfCurrentMagnitude < allMagnitudes.length - 1) {
+                // if we are NOT at the last item, just go one forward
+                nextMag = allMagnitudes[indexOfCurrentMagnitude + 1].mag;
+            } else {
+                // if we ARE at the last item, wrap around to the first one
+                nextMag = allMagnitudes[0].mag;
+            }
+
+
+            let sql = 'SELECT * FROM Earthquakes WHERE mag == ?';
+            db.all(sql, [currentMagnitude], (err, rows) => {
+                if (err) {
+                    res.status(500).type('txt').send('SQL Error');
                 }
-                let response = data.replace('$$$MAGNITUDE_ROWS$$$', tr_string);
-                response = response.replace('$$$MAGNITUDE$$$', magnitude);
-                res.status(200).type('html').send(response);
-            });
+                else {
 
+                    fs.readFile(path.join(template, 'magnitude.html'), {encoding: 'utf8'}, (err, data) => {
+                        let tr_string = '';
+                        let magnitude = '';
+                        for (let i=0; i < rows.length; i++) {
+                            tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
+                            magnitude = rows[i].mag;
+                        }
+
+                        // build the prev/next links 
+                        let prevLink = '<a href="/magnitude/' + prevMag + '">Previous Magnitude</a>';
+                        let nextLink = '<a href="/magnitude/' + nextMag + '">Next Magnitude</a>';
+
+                        let response = data.replace('$$$MAGNITUDE_ROWS$$$', tr_string);
+                        response = response.replace('$$$MAGNITUDE$$$', magnitude);
+                        response = response.replace('$$$PREV_LINK$$$', prevLink);
+                        response = response.replace('$$$NEXT_LINK$$$', nextLink);
+                        res.status(200).type('html').send(response);
+                    });
+
+                }
+            });
         }
-    });
+     });
 });
 
 // by depth
