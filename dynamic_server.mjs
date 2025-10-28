@@ -56,14 +56,7 @@ app.get('/', (req, res) => {
         });
     }
 
-    // list out locations
-
-    // list out magnitudes
-
-    // list out depths
-
-    let sql = 'SELECT DISTINCT locationSource FROM Earthquakes';
-    console.log(sql);
+    let sql = 'SELECT DISTINCT locationSource FROM Earthquakes ORDER BY locationSource';
 
     let sql2 = 'SELECT DISTINCT mag FROM Earthquakes LIMIT 50';
 
@@ -71,6 +64,7 @@ app.get('/', (req, res) => {
 
     let response;
 
+    // list out locations
     db.all(sql, [], (err, rows) => {
         if (err) {
             res.status(500).type('txt').send('SQL Error');
@@ -84,7 +78,7 @@ app.get('/', (req, res) => {
         }
      });
 
-     
+     // list out magnitudes
      db.all(sql2, [], (err, rows) => {
         if (err) {
             res.status(500).type('txt').send('SQL Error');
@@ -98,7 +92,7 @@ app.get('/', (req, res) => {
         }
      });
 
-     
+    // list out depths 
     db.all(sql3, [], (err, rows) => {
         if (err) {
             res.status(500).type('txt').send('SQL Error');
