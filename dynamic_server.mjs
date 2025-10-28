@@ -170,10 +170,14 @@ app.get('/location/:loc', (req, res) => {
                         let prevLink = '<a href="/location/' + prevLoc + '">Previous Location</a>';
                         let nextLink = '<a href="/location/' + nextLoc + '">Next Location</a>';
 
+                        let homeLink = '<a href="/">Back to Home</a>';
+
+
                         let response = data.replace('$$$LOCATION_ROWS$$$', tr_string);
                         response = response.replace('$$$LOCATION$$$', location);
                         response = response.replace('$$$PREV_LINK$$$', prevLink);
                         response = response.replace('$$$NEXT_LINK$$$', nextLink);
+                        response = response.replace('$$$HOME_LINK$$$', homeLink);
                         res.status(200).type('html').send(response);
                     });
 
@@ -246,10 +250,13 @@ app.get('/magnitude/:mag', (req, res) => {
                         let prevLink = '<a href="/magnitude/' + prevMag + '">Previous Magnitude</a>';
                         let nextLink = '<a href="/magnitude/' + nextMag + '">Next Magnitude</a>';
 
+                        let homeLink = '<a href="/">Back to Home</a>';
+
                         let response = data.replace('$$$MAGNITUDE_ROWS$$$', tr_string);
                         response = response.replace('$$$MAGNITUDE$$$', magnitude);
                         response = response.replace('$$$PREV_LINK$$$', prevLink);
                         response = response.replace('$$$NEXT_LINK$$$', nextLink);
+                        response = response.replace('$$$HOME_LINK$$$', homeLink);
                         res.status(200).type('html').send(response);
                     });
 
@@ -319,10 +326,13 @@ app.get('/depth/:dep', (req, res) => {
                         let prevLink = '<a href="/depth/' + prevDep + '">Previous Depth</a>';
                         let nextLink = '<a href="/depth/' + nextDep + '">Next Depth</a>';
 
+                        let homeLink = '<a href="/">Back to Home</a>';
+
                         let response = data.replace('$$$DEPTH_ROWS$$$', tr_string);
                         response = response.replace('$$$DEPTH$$$', depth);
                         response = response.replace('$$$PREV_LINK$$$', prevLink);
                         response = response.replace('$$$NEXT_LINK$$$', nextLink);
+                        response = response.replace('$$$HOME_LINK$$$', homeLink);
                         res.status(200).type('html').send(response);
                     });
 
