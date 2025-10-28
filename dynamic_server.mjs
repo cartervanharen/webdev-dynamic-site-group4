@@ -196,10 +196,10 @@ app.get('/magnitude/:mag', (req, res) => {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
-            // find the index of the current location in that ordered list
+            // find the index of the current magnitude in that ordered list
             let indexOfCurrentMagnitude = allMagnitudes.findIndex(row => row.mag === currentMagnitude);
 
-            // if the requested location is not in the list -> 404
+            // if the requested magnitude is not in the list -> 404
             if (indexOfCurrentMagnitude === -1) {
                 res.status(404).type('txt').send('Magnitude not found: ' + currentMagnitude);
                 return;
@@ -208,7 +208,7 @@ app.get('/magnitude/:mag', (req, res) => {
             let prevMag;
             let nextMag;
 
-            // figure out previous location
+            // figure out previous magnitude
             if (indexOfCurrentMagnitude > 0) {
                 // if we are NOT at the first item, just go one back
                 prevMag = allMagnitudes[indexOfCurrentMagnitude - 1].mag;
@@ -217,7 +217,7 @@ app.get('/magnitude/:mag', (req, res) => {
                 prevMag = allMagnitudes[allMagnitudes.length - 1].mag;
             }
 
-            // figure out next location
+            // figure out next magnitude
             if (indexOfCurrentMagnitude < allMagnitudes.length - 1) {
                 // if we are NOT at the last item, just go one forward
                 nextMag = allMagnitudes[indexOfCurrentMagnitude + 1].mag;
@@ -261,28 +261,75 @@ app.get('/magnitude/:mag', (req, res) => {
 
 // by depth
 app.get('/depth/:dep', (req, res) => {
-    let currentDepth = req.params.dep;
-    let sql = 'SELECT * FROM Earthquakes WHERE depth == ?';
-    db.all(sql, [currentDepth], (err, rows) => {
+    let currentDepth = parseFloat(req.params.dep);
+
+    let sqlAllDep = 'SELECT DISTINCT depth FROM Earthquakes LIMIT 50';
+
+    db.all(sqlAllDep, [], (err, allDepths) => {
         if (err) {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
+             // find the index of the current depth in that ordered list
+            let indexOfCurrentDepth = allDepths.findIndex(row => row.depth === currentDepth);
 
-             fs.readFile(path.join(template, 'depth.html'), {encoding: 'utf8'}, (err, data) => {
-                let tr_string = '';
-                let depth = '';
-                for (let i=0; i < rows.length; i++) {
-                    tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
-                    depth = rows[i].depth;
+            // if the requested depth is not in the list -> 404
+            if (indexOfCurrentDepth === -1) {
+                res.status(404).type('txt').send('Depth not found: ' + currentDepth);
+                return;
+            }
+
+            let prevDep;
+            let nextDep;
+
+            // figure out previous depth
+            if (indexOfCurrentDepth > 0) {
+                // if we are NOT at the first item, just go one back
+                prevDep = allDepths[indexOfCurrentDepth - 1].depth;
+            } else {
+                // if we ARE at the first item, wrap around to the last one
+                prevDep = allDepths[allDepths.length - 1].depth;
+            }
+
+            // figure out next depth
+            if (indexOfCurrentDepth < allDepths.length - 1) {
+                // if we are NOT at the last item, just go one forward
+                nextDep = allDepths[indexOfCurrentDepth + 1].depth;
+            } else {
+                // if we ARE at the last item, wrap around to the first one
+                nextDep = allDepths[0].depth;
+            }
+
+            let sql = 'SELECT * FROM Earthquakes WHERE depth == ?';
+            db.all(sql, [currentDepth], (err, rows) => {
+                if (err) {
+                    res.status(500).type('txt').send('SQL Error');
                 }
-                let response = data.replace('$$$DEPTH_ROWS$$$', tr_string);
-                response = response.replace('$$$DEPTH$$$', depth);
-                res.status(200).type('html').send(response);
-            });
+                else {
 
+                    fs.readFile(path.join(template, 'depth.html'), {encoding: 'utf8'}, (err, data) => {
+                        let tr_string = '';
+                        let depth = '';
+                        for (let i=0; i < rows.length; i++) {
+                            tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
+                            depth = rows[i].depth;
+                        }
+
+                        // build the prev/next links 
+                        let prevLink = '<a href="/depth/' + prevDep + '">Previous Depth</a>';
+                        let nextLink = '<a href="/depth/' + nextDep + '">Next Depth</a>';
+
+                        let response = data.replace('$$$DEPTH_ROWS$$$', tr_string);
+                        response = response.replace('$$$DEPTH$$$', depth);
+                        response = response.replace('$$$PREV_LINK$$$', prevLink);
+                        response = response.replace('$$$NEXT_LINK$$$', nextLink);
+                        res.status(200).type('html').send(response);
+                    });
+
+                }
+            });
         }
-    });
+     });
 });
 
 app.listen(port, () => {
