@@ -111,14 +111,6 @@ app.get('/', (req, res) => {
             }
         }
      });
-
-
-     /*
-    // basic test to see if its working
-     fs.readFile(path.join(template, 'index.html'), {encoding: 'utf8'}, (err, data) => {            
-        // send response
-        res.status(200).type('html').send(data);
-    });*/
 });
 
 // three dynamic routes ----------------------------------------------------
@@ -186,7 +178,7 @@ app.get('/depth/:dep', (req, res) => {
                 let depth = '';
                 for (let i=0; i < rows.length; i++) {
                     tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
-                    depth = rows[i].mag;
+                    depth = rows[i].depth;
                 }
                 let response = data.replace('$$$DEPTH_ROWS$$$', tr_string);
                 response = response.replace('$$$DEPTH$$$', depth);
