@@ -167,8 +167,8 @@ app.get('/location/:loc', (req, res) => {
                         }
 
                         // build the prev/next links 
-                        let prevLink = '<a href="/location/' + prevLoc + '">Previous</a>';
-                        let nextLink = '<a href="/location/' + nextLoc + '">Next</a>';
+                        let prevLink = '<a href="/location/' + prevLoc + '">Previous Location</a>';
+                        let nextLink = '<a href="/location/' + nextLoc + '">Next Location</a>';
 
                         let response = data.replace('$$$LOCATION_ROWS$$$', tr_string);
                         response = response.replace('$$$LOCATION$$$', location);
