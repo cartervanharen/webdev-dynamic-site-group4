@@ -111,27 +111,77 @@ app.get('/', (req, res) => {
 // by location
 app.get('/location/:loc', (req, res) => {
     let currentLocation = req.params.loc;
-    let sql = 'SELECT * FROM Earthquakes WHERE locationSource == ?';
-    db.all(sql, [currentLocation], (err, rows) => {
+
+    let sqlAllLoc = 'SELECT DISTINCT locationSource FROM Earthquakes ORDER BY locationSource';
+
+    // get ordered list of all distinct locations (use this to compute prev/next)
+    db.all(sqlAllLoc, [], (err, allLocations) => {
         if (err) {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
-            
-            fs.readFile(path.join(template, 'location.html'), {encoding: 'utf8'}, (err, data) => {
-                let tr_string = '';
-                let location = '';
-                for (let i=0; i < rows.length; i++) {
-                    tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td></tr>';
-                    location = rows[i].locationSource;
+
+            // find the index of the current location in that ordered list
+            let index = allLocations.findIndex(row => row.locationSource === currentLocation);
+
+            // if the requested location is not in the list -> 404
+            if (index === -1) {
+                res.status(404).type('txt').send('Location not found: ' + currentLocation);
+                return;
+            }
+
+            let prevLoc;
+            let nextLoc;
+
+            // figure out previous location
+            if (index > 0) {
+                // if we are NOT at the first item, just go one back
+                prevLoc = allLocations[index - 1].locationSource;
+            } else {
+                // if we ARE at the first item, wrap around to the last one
+                prevLoc = allLocations[allLocations.length - 1].locationSource;
+            }
+
+            // figure out next location
+            if (index < allLocations.length - 1) {
+                // if we are NOT at the last item, just go one forward
+                nextLoc = allLocations[index + 1].locationSource;
+            } else {
+                // if we ARE at the last item, wrap around to the first one
+                nextLoc = allLocations[0].locationSource;
+            }
+
+            let sql = 'SELECT * FROM Earthquakes WHERE locationSource == ?';
+            db.all(sql, [currentLocation], (err, rows) => {
+                if (err) {
+                    res.status(500).type('txt').send('SQL Error');
                 }
-                let response = data.replace('$$$LOCATION_ROWS$$$', tr_string);
-                response = response.replace('$$$LOCATION$$$', location);
-                res.status(200).type('html').send(response);
+                else {
+                    
+                    fs.readFile(path.join(template, 'location.html'), {encoding: 'utf8'}, (err, data) => {
+                        let tr_string = '';
+                        let location = '';
+                        for (let i=0; i < rows.length; i++) {
+                            tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td></tr>';
+                            location = rows[i].locationSource;
+                        }
+
+                        // build the prev/next links 
+                        let prevLink = '<a href="/location/' + prevLoc + '">Previous</a>';
+                        let nextLink = '<a href="/location/' + nextLoc + '">Next</a>';
+
+                        let response = data.replace('$$$LOCATION_ROWS$$$', tr_string);
+                        response = response.replace('$$$LOCATION$$$', location);
+                        response = response.replace('$$$PREV_LINK$$$', prevLink);
+                        response = response.replace('$$$NEXT_LINK$$$', nextLink);
+                        res.status(200).type('html').send(response);
+                    });
+
+                }
             });
 
         }
-    });
+     });
 });
 
 // by magnitude
