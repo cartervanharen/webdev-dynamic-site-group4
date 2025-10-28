@@ -110,8 +110,9 @@ app.get('/', (req, res) => {
 // three dynamic routes ----------------------------------------------------
 // by location
 app.get('/location/:loc', (req, res) => {
+    let currentLocation = req.params.loc;
     let sql = 'SELECT * FROM Earthquakes WHERE locationSource == ?';
-    db.all(sql, [req.params.loc], (err, rows) => {
+    db.all(sql, [currentLocation], (err, rows) => {
         if (err) {
             res.status(500).type('txt').send('SQL Error');
         }
@@ -135,8 +136,9 @@ app.get('/location/:loc', (req, res) => {
 
 // by magnitude
 app.get('/magnitude/:mag', (req, res) => {
+    let currentMagnitude = req.params.mag;
     let sql = 'SELECT * FROM Earthquakes WHERE mag == ?';
-    db.all(sql, [req.params.mag], (err, rows) => {
+    db.all(sql, [currentMagnitude], (err, rows) => {
         if (err) {
             res.status(500).type('txt').send('SQL Error');
         }
@@ -160,8 +162,9 @@ app.get('/magnitude/:mag', (req, res) => {
 
 // by depth
 app.get('/depth/:dep', (req, res) => {
+    let currentDepth = req.params.dep;
     let sql = 'SELECT * FROM Earthquakes WHERE depth == ?';
-    db.all(sql, [req.params.dep], (err, rows) => {
+    db.all(sql, [currentDepth], (err, rows) => {
         if (err) {
             res.status(500).type('txt').send('SQL Error');
         }
