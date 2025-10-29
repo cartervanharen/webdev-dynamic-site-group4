@@ -16,6 +16,28 @@ body {
 .grid-x {
   padding: 3rem;
   gap: 2rem;
+  max-width: 100%;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  justify-content: center;
+}
+
+@media (min-width: 1024px) {
+  .grid-x {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 1023px) {
+  .grid-x {
+    flex-wrap: wrap !important;
+  }
+  
+  .cell {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
 }
 
 .cell {
@@ -24,6 +46,11 @@ body {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   padding: 2rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+  max-height: 80vh;
+  overflow-y: auto;
+  flex: 0 0 33.333%;
+  max-width: 33.333%;
 }
 
 .cell:hover {
@@ -116,6 +143,42 @@ a:hover {
 .nav-links a:hover {
   background-color: #5500ab;
   color: #fff;
+}
+
+.home {
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.home a {
+  display: inline-block;
+  background-color: #f0effa;
+  padding: 0.8rem 1.4rem;
+  border-radius: 0.8rem;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.home a:hover {
+  background-color: #5500ab;
+  color: #fff;
+}
+
+.chart-container {
+  background-color: white;
+  border-radius: 1.2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+h2 {
+  color: #5500ab;
+  font-size: 2.4rem;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #5500ab;
 }
 
 @media (max-width: 768px) {

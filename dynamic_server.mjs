@@ -10,6 +10,15 @@ const port = 8080;
 const root = path.join(__dirname, 'public');
 const template = path.join(__dirname, 'templates');
 
+const SQL_GET_ALL_LOCATIONS = 'SELECT DISTINCT locationSource FROM Earthquakes ORDER BY locationSource';
+const SQL_GET_ALL_MAGNITUDES = 'SELECT DISTINCT mag FROM Earthquakes LIMIT 50';
+const SQL_GET_ALL_DEPTHS = 'SELECT DISTINCT depth FROM Earthquakes LIMIT 50';
+const SQL_GET_EARTHQUAKES_BY_LOCATION = 'SELECT * FROM Earthquakes WHERE locationSource == ?';
+const SQL_GET_EARTHQUAKES_BY_MAGNITUDE = 'SELECT * FROM Earthquakes WHERE mag == ?';
+const SQL_GET_EARTHQUAKES_BY_MAGNITUDE_RANGE = 'SELECT * FROM Earthquakes WHERE mag >= ? AND mag < ?';
+const SQL_GET_EARTHQUAKES_BY_DEPTH = 'SELECT * FROM Earthquakes WHERE depth == ?';
+const SQL_GET_EARTHQUAKES_BY_DEPTH_RANGE = 'SELECT * FROM Earthquakes WHERE depth >= ? AND depth < ?';
+
 let app = express();
 app.use(express.static(root));
 
@@ -27,9 +36,8 @@ const db = new sqlite3.Database('./earthquakes.sqlite3', sqlite3.OPEN_READONLY, 
 app.get('/', (req, res) => {
     let asyncCount = 0;
     let dbRows1 = null;
-    let dbRows2 = null;
-    let dbRows3 = null;
     let fileData = null;
+    let response;
 
     let sendResponse = function () {
         fs.readFile(path.join(template, 'index.html'), {encoding: 'utf8'}, (err, data) => {
@@ -40,14 +48,14 @@ app.get('/', (req, res) => {
             }
 
             let li_string2 = '';
-            for (let i=0; i < dbRows2.length; i++) {
-                li_string2 += '<li><a href="/magnitude/' + dbRows2[i].mag + '">' + dbRows2[i].mag + '</a></li>';
+            for (let magGroup = 1; magGroup <= 9; magGroup++) {
+                li_string2 += '<li><a href="/magnitude/' + magGroup + '">Magnitude ' + magGroup + '</a></li>';
             }
 
             let li_string3 = '';
-            for (let i=0; i < dbRows3.length; i++) {
-                li_string3 += '<li><a href="/depth/' + dbRows3[i].depth + '">' + dbRows3[i].depth + '</a></li>';
-            }
+            li_string3 += '<li><a href="/depth/1">Shallow (0-70 km)</a></li>';
+            li_string3 += '<li><a href="/depth/2">Intermediate (70-300 km)</a></li>';
+            li_string3 += '<li><a href="/depth/3">Deep (300-700 km)</a></li>';
                       
             response = data.replace('$$$LOCATION_LIST$$$', li_string);
             response = response.replace('$$$MAGNITUDE_LIST$$$', li_string2);
@@ -56,13 +64,7 @@ app.get('/', (req, res) => {
         });
     }
 
-    let sql = 'SELECT DISTINCT locationSource FROM Earthquakes ORDER BY locationSource';
-
-    let sql2 = 'SELECT DISTINCT mag FROM Earthquakes LIMIT 50';
-
-    let sql3 = 'SELECT DISTINCT depth FROM Earthquakes LIMIT 50';
-
-    let response;
+    let sql = SQL_GET_ALL_LOCATIONS;
 
     // list out locations
     db.all(sql, [], (err, rows) => {
@@ -72,35 +74,7 @@ app.get('/', (req, res) => {
         else {
             dbRows1 = rows;
             asyncCount++;
-            if (asyncCount == 3) {
-                sendResponse();
-            }
-        }
-     });
-
-     // list out magnitudes
-     db.all(sql2, [], (err, rows) => {
-        if (err) {
-            res.status(500).type('txt').send('SQL Error');
-        }
-        else {
-            dbRows2 = rows;
-            asyncCount++;
-            if (asyncCount == 3) {
-                sendResponse();
-            }
-        }
-     });
-
-    // list out depths 
-    db.all(sql3, [], (err, rows) => {
-        if (err) {
-            res.status(500).type('txt').send('SQL Error');
-        }
-        else {
-            dbRows3 = rows;
-            asyncCount++;
-            if (asyncCount == 3) {
+            if (asyncCount == 1) {
                 sendResponse();
             }
         }
@@ -112,7 +86,7 @@ app.get('/', (req, res) => {
 app.get('/location/:loc', (req, res) => {
     let currentLocation = req.params.loc;
 
-    let sqlAllLoc = 'SELECT DISTINCT locationSource FROM Earthquakes ORDER BY locationSource';
+    let sqlAllLoc = SQL_GET_ALL_LOCATIONS;
 
     // get ordered list of all distinct locations (use this to compute prev/next)
     db.all(sqlAllLoc, [], (err, allLocations) => {
@@ -151,7 +125,7 @@ app.get('/location/:loc', (req, res) => {
                 nextLoc = allLocations[0].locationSource;
             }
 
-            let sql = 'SELECT * FROM Earthquakes WHERE locationSource == ?';
+            let sql = SQL_GET_EARTHQUAKES_BY_LOCATION;
             db.all(sql, [currentLocation], (err, rows) => {
                 if (err) {
                     res.status(500).type('txt').send('SQL Error');
@@ -161,9 +135,15 @@ app.get('/location/:loc', (req, res) => {
                     fs.readFile(path.join(template, 'location.html'), {encoding: 'utf8'}, (err, data) => {
                         let tr_string = '';
                         let location = '';
+                        
+                        let magnitudes = [];
+                        let depths = [];
+                        
                         for (let i=0; i < rows.length; i++) {
                             tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td></tr>';
                             location = rows[i].locationSource;
+                            magnitudes.push(rows[i].mag);
+                            depths.push(rows[i].depth);
                         }
 
                         // build the prev/next links 
@@ -172,12 +152,14 @@ app.get('/location/:loc', (req, res) => {
 
                         let homeLink = '<a href="/">Back to Home</a>';
 
-
                         let response = data.replace('$$$LOCATION_ROWS$$$', tr_string);
                         response = response.replace('$$$LOCATION$$$', location);
+                        response = response.replace('$$$TOTAL_COUNT$$$', rows.length);
                         response = response.replace('$$$PREV_LINK$$$', prevLink);
                         response = response.replace('$$$NEXT_LINK$$$', nextLink);
                         response = response.replace('$$$HOME_LINK$$$', homeLink);
+                        response = response.replace('$$$MAGNITUDES$$$', JSON.stringify(magnitudes));
+                        response = response.replace('$$$DEPTHS$$$', JSON.stringify(depths));
                         res.status(200).type('html').send(response);
                     });
 
@@ -190,156 +172,136 @@ app.get('/location/:loc', (req, res) => {
 
 // by magnitude
 app.get('/magnitude/:mag', (req, res) => {
-    let currentMagnitude = parseFloat(req.params.mag);
+    let magGroup = parseInt(req.params.mag);
 
-    let sqlAllMag = 'SELECT DISTINCT mag FROM Earthquakes LIMIT 50';
-    
-    // list out magnitudes
-     db.all(sqlAllMag, [], (err, allMagnitudes) => {
+    if (magGroup < 1 || magGroup > 9 || isNaN(magGroup)) {
+        res.status(404).type('txt').send('Magnitude group not found: ' + req.params.mag);
+        return;
+    }
+
+    let lowerBound = magGroup;
+    let upperBound = magGroup + 1;
+
+    let prevMag = magGroup > 1 ? magGroup - 1 : 9;
+    let nextMag = magGroup < 9 ? magGroup + 1 : 1;
+
+    let sql = SQL_GET_EARTHQUAKES_BY_MAGNITUDE_RANGE;
+    db.all(sql, [lowerBound, upperBound], (err, rows) => {
         if (err) {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
-            // find the index of the current magnitude in that ordered list
-            let indexOfCurrentMagnitude = allMagnitudes.findIndex(row => row.mag === currentMagnitude);
-
-            // if the requested magnitude is not in the list -> 404
-            if (indexOfCurrentMagnitude === -1) {
-                res.status(404).type('txt').send('Magnitude not found: ' + currentMagnitude);
-                return;
-            }
-
-            let prevMag;
-            let nextMag;
-
-            // figure out previous magnitude
-            if (indexOfCurrentMagnitude > 0) {
-                // if we are NOT at the first item, just go one back
-                prevMag = allMagnitudes[indexOfCurrentMagnitude - 1].mag;
-            } else {
-                // if we ARE at the first item, wrap around to the last one
-                prevMag = allMagnitudes[allMagnitudes.length - 1].mag;
-            }
-
-            // figure out next magnitude
-            if (indexOfCurrentMagnitude < allMagnitudes.length - 1) {
-                // if we are NOT at the last item, just go one forward
-                nextMag = allMagnitudes[indexOfCurrentMagnitude + 1].mag;
-            } else {
-                // if we ARE at the last item, wrap around to the first one
-                nextMag = allMagnitudes[0].mag;
-            }
-
-
-            let sql = 'SELECT * FROM Earthquakes WHERE mag == ?';
-            db.all(sql, [currentMagnitude], (err, rows) => {
-                if (err) {
-                    res.status(500).type('txt').send('SQL Error');
+            fs.readFile(path.join(template, 'magnitude.html'), {encoding: 'utf8'}, (err, data) => {
+                let tr_string = '';
+                let magnitudeRange = 'Magnitude ' + lowerBound + '.0 - ' + upperBound + '.0 (exclusive)';
+                
+                let locationCounts = {};
+                let depths = [];
+                let magnitudes = [];
+                
+                for (let i=0; i < rows.length; i++) {
+                    tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
+                    
+                    if (locationCounts[rows[i].locationSource]) {
+                        locationCounts[rows[i].locationSource]++;
+                    } else {
+                        locationCounts[rows[i].locationSource] = 1;
+                    }
+                    
+                    depths.push(rows[i].depth);
+                    magnitudes.push(rows[i].mag);
                 }
-                else {
+                
+                let locationArray = Object.keys(locationCounts).map(key => ({
+                    location: key,
+                    count: locationCounts[key]
+                })).sort((a, b) => b.count - a.count).slice(0, 10);
+                
+                let chartLocations = locationArray.map(item => item.location);
+                let chartCounts = locationArray.map(item => item.count);
 
-                    fs.readFile(path.join(template, 'magnitude.html'), {encoding: 'utf8'}, (err, data) => {
-                        let tr_string = '';
-                        let magnitude = '';
-                        for (let i=0; i < rows.length; i++) {
-                            tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
-                            magnitude = rows[i].mag;
-                        }
+                // build the prev/next links 
+                let prevLink = '<a href="/magnitude/' + prevMag + '">Previous Magnitude</a>';
+                let nextLink = '<a href="/magnitude/' + nextMag + '">Next Magnitude</a>';
 
-                        // build the prev/next links 
-                        let prevLink = '<a href="/magnitude/' + prevMag + '">Previous Magnitude</a>';
-                        let nextLink = '<a href="/magnitude/' + nextMag + '">Next Magnitude</a>';
-
-                        let homeLink = '<a href="/">Back to Home</a>';
+                let homeLink = '<a href="/">Back to Home</a>';
 
                         let response = data.replace('$$$MAGNITUDE_ROWS$$$', tr_string);
-                        response = response.replace('$$$MAGNITUDE$$$', magnitude);
+                        response = response.replace('$$$MAGNITUDE$$$', magnitudeRange);
+                        response = response.replace('$$$TOTAL_COUNT$$$', rows.length);
                         response = response.replace('$$$PREV_LINK$$$', prevLink);
                         response = response.replace('$$$NEXT_LINK$$$', nextLink);
                         response = response.replace('$$$HOME_LINK$$$', homeLink);
+                        response = response.replace('$$$MAGNITUDES$$$', JSON.stringify(magnitudes));
                         res.status(200).type('html').send(response);
-                    });
-
-                }
             });
         }
-     });
+    });
 });
 
 // by depth
 app.get('/depth/:dep', (req, res) => {
-    let currentDepth = parseFloat(req.params.dep);
+    let depthGroup = parseInt(req.params.dep);
 
-    let sqlAllDep = 'SELECT DISTINCT depth FROM Earthquakes LIMIT 50';
+    if (depthGroup < 1 || depthGroup > 3 || isNaN(depthGroup)) {
+        res.status(404).type('txt').send('Depth group not found: ' + req.params.dep);
+        return;
+    }
 
-    db.all(sqlAllDep, [], (err, allDepths) => {
+    let lowerBound, upperBound, depthLabel;
+    
+    // Define depth ranges
+    if (depthGroup === 1) {
+        lowerBound = 0;
+        upperBound = 70;
+        depthLabel = 'Shallow (0-70 km)';
+    } else if (depthGroup === 2) {
+        lowerBound = 70;
+        upperBound = 300;
+        depthLabel = 'Intermediate (70-300 km)';
+    } else { // depthGroup === 3
+        lowerBound = 300;
+        upperBound = 700;
+        depthLabel = 'Deep (300-700 km)';
+    }
+
+    let prevDepth = depthGroup > 1 ? depthGroup - 1 : 3;
+    let nextDepth = depthGroup < 3 ? depthGroup + 1 : 1;
+
+    let sql = SQL_GET_EARTHQUAKES_BY_DEPTH_RANGE;
+    db.all(sql, [lowerBound, upperBound], (err, rows) => {
         if (err) {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
-             // find the index of the current depth in that ordered list
-            let indexOfCurrentDepth = allDepths.findIndex(row => row.depth === currentDepth);
-
-            // if the requested depth is not in the list -> 404
-            if (indexOfCurrentDepth === -1) {
-                res.status(404).type('txt').send('Depth not found: ' + currentDepth);
-                return;
-            }
-
-            let prevDep;
-            let nextDep;
-
-            // figure out previous depth
-            if (indexOfCurrentDepth > 0) {
-                // if we are NOT at the first item, just go one back
-                prevDep = allDepths[indexOfCurrentDepth - 1].depth;
-            } else {
-                // if we ARE at the first item, wrap around to the last one
-                prevDep = allDepths[allDepths.length - 1].depth;
-            }
-
-            // figure out next depth
-            if (indexOfCurrentDepth < allDepths.length - 1) {
-                // if we are NOT at the last item, just go one forward
-                nextDep = allDepths[indexOfCurrentDepth + 1].depth;
-            } else {
-                // if we ARE at the last item, wrap around to the first one
-                nextDep = allDepths[0].depth;
-            }
-
-            let sql = 'SELECT * FROM Earthquakes WHERE depth == ?';
-            db.all(sql, [currentDepth], (err, rows) => {
-                if (err) {
-                    res.status(500).type('txt').send('SQL Error');
+            fs.readFile(path.join(template, 'depth.html'), {encoding: 'utf8'}, (err, data) => {
+                let tr_string = '';
+                
+                // Prepare data for charts
+                let depths = [];
+                
+                for (let i=0; i < rows.length; i++) {
+                    tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
+                    depths.push(rows[i].depth);
                 }
-                else {
 
-                    fs.readFile(path.join(template, 'depth.html'), {encoding: 'utf8'}, (err, data) => {
-                        let tr_string = '';
-                        let depth = '';
-                        for (let i=0; i < rows.length; i++) {
-                            tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
-                            depth = rows[i].depth;
-                        }
+                // build the prev/next links 
+                let prevLink = '<a href="/depth/' + prevDepth + '">Previous Depth Group</a>';
+                let nextLink = '<a href="/depth/' + nextDepth + '">Next Depth Group</a>';
 
-                        // build the prev/next links 
-                        let prevLink = '<a href="/depth/' + prevDep + '">Previous Depth</a>';
-                        let nextLink = '<a href="/depth/' + nextDep + '">Next Depth</a>';
+                let homeLink = '<a href="/">Back to Home</a>';
 
-                        let homeLink = '<a href="/">Back to Home</a>';
-
-                        let response = data.replace('$$$DEPTH_ROWS$$$', tr_string);
-                        response = response.replace('$$$DEPTH$$$', depth);
-                        response = response.replace('$$$PREV_LINK$$$', prevLink);
-                        response = response.replace('$$$NEXT_LINK$$$', nextLink);
-                        response = response.replace('$$$HOME_LINK$$$', homeLink);
-                        res.status(200).type('html').send(response);
-                    });
-
-                }
+                let response = data.replace('$$$DEPTH_ROWS$$$', tr_string);
+                response = response.replace('$$$DEPTH$$$', depthLabel);
+                response = response.replace('$$$TOTAL_COUNT$$$', rows.length);
+                response = response.replace('$$$PREV_LINK$$$', prevLink);
+                response = response.replace('$$$NEXT_LINK$$$', nextLink);
+                response = response.replace('$$$HOME_LINK$$$', homeLink);
+                response = response.replace('$$$DEPTHS$$$', JSON.stringify(depths));
+                res.status(200).type('html').send(response);
             });
         }
-     });
+    });
 });
 
 app.listen(port, () => {

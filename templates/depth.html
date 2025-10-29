@@ -5,6 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/foundation.css" />
     <link rel="stylesheet" href="/css/style.css" />
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 	<title>Depth</title>
 </head>
 <body>
@@ -17,12 +18,20 @@
     <p class="home">$$$HOME_LINK$$$</p>
 
     <h1>$$$DEPTH$$$</h1>
+    <p><strong>Total Earthquakes: $$$TOTAL_COUNT$$$</strong></p>
+
+    <div class="chart-container">
+        <div id="magnitudeChart" style="width:100%; height:400px;"></div>
+    </div>
+
+    <h2>Earthquake Details</h2>
         <table>
             <thead>
                 <tr>
                     <th>Time</th>
                     <th>Latitude</th>
                     <th>Longitude</th>
+                    <th>Depth</th>
                     <th>Magnitude</th>
                     <th>Place</th>
                     <th>Type</th>
@@ -33,5 +42,31 @@
                 $$$DEPTH_ROWS$$$
             </tbody>
         </table>
+
+    <script>
+        // Depth Distribution within this range
+        const depths = $$$DEPTHS$$$;
+        const depthTrace = {
+            x: depths,
+            type: 'histogram',
+            marker: {
+                color: '#5500ab',
+                line: {
+                    color: '#3d0079',
+                    width: 1
+                }
+            },
+            xbins: {
+                size: 5
+            }
+        };
+        const depthLayout = {
+            title: 'Earthquake Frequency at Different Depths',
+            xaxis: { title: 'Depth (km)' },
+            yaxis: { title: 'Number of Earthquakes' },
+            bargap: 0.05
+        };
+        Plotly.newPlot('magnitudeChart', [depthTrace], depthLayout, {responsive: true});
+    </script>
 </body>
 </html>

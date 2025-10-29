@@ -5,6 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/foundation.css" />
     <link rel="stylesheet" href="/css/style.css" />
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 	<title>Location</title>
 </head>
 <body>
@@ -17,6 +18,13 @@
     <p class="home">$$$HOME_LINK$$$</p>
 
     <h1>$$$LOCATION$$$</h1>
+    <p><strong>Total Earthquakes: $$$TOTAL_COUNT$$$</strong></p>
+
+    <div class="chart-container">
+        <div id="magnitudeChart" style="width:100%; height:400px;"></div>
+    </div>
+
+    <h2>Earthquake Details</h2>
         <table>
             <thead>
                 <tr>
@@ -33,5 +41,29 @@
                 $$$LOCATION_ROWS$$$
             </tbody>
         </table>
+
+    <script>
+        // Magnitude Distribution
+        const magnitudes = $$$MAGNITUDES$$$;
+        const magTrace = {
+            x: magnitudes,
+            type: 'histogram',
+            marker: {
+                color: '#5500ab',
+                line: {
+                    color: '#3d0079',
+                    width: 1
+                }
+            },
+            name: 'Magnitude'
+        };
+        const magLayout = {
+            title: 'Magnitude Distribution',
+            xaxis: { title: 'Magnitude' },
+            yaxis: { title: 'Count' },
+            bargap: 0.05
+        };
+        Plotly.newPlot('magnitudeChart', [magTrace], magLayout, {responsive: true});
+    </script>
 </body>
 </html>
