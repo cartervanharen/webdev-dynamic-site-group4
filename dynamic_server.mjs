@@ -226,14 +226,17 @@ app.get('/magnitude/:mag', (req, res) => {
 
                 let homeLink = '<a href="/">Back to Home</a>';
 
-                        let response = data.replace('$$$MAGNITUDE_ROWS$$$', tr_string);
-                        response = response.replace('$$$MAGNITUDE$$$', magnitudeRange);
-                        response = response.replace('$$$TOTAL_COUNT$$$', rows.length);
-                        response = response.replace('$$$PREV_LINK$$$', prevLink);
-                        response = response.replace('$$$NEXT_LINK$$$', nextLink);
-                        response = response.replace('$$$HOME_LINK$$$', homeLink);
-                        response = response.replace('$$$MAGNITUDES$$$', JSON.stringify(magnitudes));
-                        res.status(200).type('html').send(response);
+                let imageSrc = '/images/magnitudeChartM' + magGroup + '.png';
+
+                let response = data.replace('$$$MAGNITUDE_ROWS$$$', tr_string);
+                response = response.replace('$$$MAGNITUDE$$$', magnitudeRange);
+                response = response.replace('$$$TOTAL_COUNT$$$', rows.length);
+                response = response.replace('$$$PREV_LINK$$$', prevLink);
+                response = response.replace('$$$NEXT_LINK$$$', nextLink);
+                response = response.replace('$$$HOME_LINK$$$', homeLink);
+                response = response.replace('$$$MAGNITUDE_IMAGE_SRC$$$', imageSrc);
+                response = response.replace('$$$MAGNITUDES$$$', JSON.stringify(magnitudes));
+                res.status(200).type('html').send(response);
             });
         }
     });
