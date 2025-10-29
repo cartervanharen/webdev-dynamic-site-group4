@@ -1,36 +1,133 @@
 html {
   font-size: 62.5%;
+  scroll-behavior: smooth;
 }
 
 body {
-    font-size: 2rem;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 1.8rem;
+  line-height: 1.6;
+  color: #222;
+  background: linear-gradient(135deg, #f4f4f9, #eae8ff);
+  margin: 0;
+  padding: 0;
+}
+
+.grid-x {
+  padding: 3rem;
+  gap: 2rem;
+}
+
+.cell {
+  background-color: white;
+  border-radius: 1.2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cell:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
 h1 {
-    color: purple;
-    font-size: 4rem;
+  color: #5500ab;
+  font-size: 3rem;
+  border-bottom: 3px solid #5500ab;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
-th, td {
-    padding: 1.5rem;
-    border: 2px solid #551cff;
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  margin: 0.6rem 0;
+}
+
+li a {
+  display: block;
+  background-color: #f0effa;
+  color: #333;
+  text-decoration: none;
+  padding: 1rem 1.4rem;
+  border-radius: 0.8rem;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+li a:hover {
+  background-color: #5500ab;
+  color: #fff;
+  transform: scale(1.03);
 }
 
 table {
-    border-collapse: collapse;
-    color:black;
-    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    font-style:normal;
-    font-weight:bold;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 2rem;
+  background-color: #fff;
+  border-radius: 1rem;
+  overflow: hidden;
+  font-size: 1.6rem;
 }
 
-.home a {
-    background-color: #e8e6ef;
-    padding: 1rem;
+th, td {
+  padding: 1.2rem;
+  border-bottom: 1px solid #ccc;
+  text-align: left;
 }
 
-.home a:hover {
-    background-color: #057a51;
-    color: rgb(255, 255, 255);
+th {
+  background-color: #5500ab;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background-color: #f7f7fb;
+}
+
+a {
+  color: #5500ab;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #bea1f7;
+}
+
+.nav-links {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+
+.nav-links a {
+  background-color: #f0effa;
+  padding: 0.8rem 1.4rem;
+  border-radius: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.nav-links a:hover {
+  background-color: #5500ab;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .grid-x {
     padding: 1rem;
+  }
+
+  h1 {
+    font-size: 2.4rem;
+  }
+
+  body {
+    font-size: 1.6rem;
+  }
 }
