@@ -227,6 +227,7 @@ app.get('/magnitude/:mag', (req, res) => {
                 let homeLink = '<a href="/">Back to Home</a>';
 
                 let imageSrc = '/images/magnitudeChartM' + magGroup + '.png';
+                let imageAlt = 'An image of a magnitude of ' + magGroup + '.';
 
                 let response = data.replace('$$$MAGNITUDE_ROWS$$$', tr_string);
                 response = response.replace('$$$MAGNITUDE$$$', magnitudeRange);
@@ -235,6 +236,7 @@ app.get('/magnitude/:mag', (req, res) => {
                 response = response.replace('$$$NEXT_LINK$$$', nextLink);
                 response = response.replace('$$$HOME_LINK$$$', homeLink);
                 response = response.replace('$$$MAGNITUDE_IMAGE_SRC$$$', imageSrc);
+                response = response.replace('$$$MAGNITUDE_IMAGE_ALT$$$', imageAlt);
                 response = response.replace('$$$MAGNITUDES$$$', JSON.stringify(magnitudes));
                 res.status(200).type('html').send(response);
             });
