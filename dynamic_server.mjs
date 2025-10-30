@@ -276,12 +276,17 @@ app.get('/depth/:dep', (req, res) => {
 
                 let homeLink = '<a href="/">Back to Home</a>';
 
+                let imageSrc = '/images/depth' + depthGroup + '.png';
+                let imageAlt = 'An image of ' + depthLabel + ' depth.';
+
                 let response = data.replace('$$$DEPTH_ROWS$$$', tr_string);
                 response = response.replace('$$$DEPTH$$$', depthLabel);
                 response = response.replace('$$$TOTAL_COUNT$$$', rows.length);
                 response = response.replace('$$$PREV_LINK$$$', prevLink);
                 response = response.replace('$$$NEXT_LINK$$$', nextLink);
                 response = response.replace('$$$HOME_LINK$$$', homeLink);
+                response = response.replace('$$$MAGNITUDE_IMAGE_SRC$$$', imageSrc);
+                response = response.replace('$$$MAGNITUDE_IMAGE_ALT$$$', imageAlt);
                 response = response.replace('$$$DEPTHS$$$', JSON.stringify(depths));
                 res.status(200).type('html').send(response);
             });
