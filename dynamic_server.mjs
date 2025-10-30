@@ -147,12 +147,17 @@ app.get('/location/:loc', (req, res) => {
 
                         let homeLink = '<a href="/">Back to Home</a>';
 
+                        let imageSrc = '/images/earthquakeMap' + currentLocation.toUpperCase() + '.png';
+                        let imageAlt = 'An image of location ' + currentLocation.toUpperCase() + '.';
+
                         let response = data.replace('$$$LOCATION_ROWS$$$', tr_string);
                         response = response.replace('$$$LOCATION$$$', location);
                         response = response.replace('$$$TOTAL_COUNT$$$', rows.length);
                         response = response.replace('$$$PREV_LINK$$$', prevLink);
                         response = response.replace('$$$NEXT_LINK$$$', nextLink);
                         response = response.replace('$$$HOME_LINK$$$', homeLink);
+                        response = response.replace('$$$MAGNITUDE_IMAGE_SRC$$$', imageSrc);
+                        response = response.replace('$$$MAGNITUDE_IMAGE_ALT$$$', imageAlt);
                         response = response.replace('$$$MAGNITUDES$$$', JSON.stringify(magnitudes));
                         response = response.replace('$$$DEPTHS$$$', JSON.stringify(depths));
                         res.status(200).type('html').send(response);
