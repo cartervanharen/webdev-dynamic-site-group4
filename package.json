@@ -10,7 +10,7 @@
         "name": "Carter VanHaren",
         "email": "carter.vanharen@gmail.com"
     },
-    "contributors": ["Anastasia Iogova", "Zoe Thoma"],
+    "contributors": ["Anastasia Iogova", "Zoe Thoma", "Carter VanHaren"],
     "repository": {"url": "https://github.com/cartervanharen/dynamic_server"},
     "dependencies": {
         "express": "^5.1.0",
