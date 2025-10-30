@@ -35,27 +35,31 @@ app.get('/', (req, res) => {
     let response;
 
     let sendResponse = function () {
-        fs.readFile(path.join(template, 'index.html'), {encoding: 'utf8'}, (err, data) => {
-            
-            let li_string = '';
-            for (let i=0; i < dbRows1.length; i++) {
-                li_string += '<li><a href="/location/' + dbRows1[i].locationSource + '">' + dbRows1[i].locationSource + '</a></li>';
+        fs.readFile(path.join(template, 'index.html'), {encoding: 'utf8'}, (errFile, data) => {
+            if (errFile) {
+                res.status(500).type('txt').send('File read error');
             }
+            else {
+                let li_string = '';
+                for (let i=0; i < dbRows1.length; i++) {
+                    li_string += '<li><a href="/location/' + dbRows1[i].locationSource + '">' + dbRows1[i].locationSource + '</a></li>';
+                }
 
-            let li_string2 = '';
-            for (let magGroup = 1; magGroup <= 9; magGroup++) {
-                li_string2 += '<li><a href="/magnitude/' + magGroup + '">Magnitude ' + magGroup + '</a></li>';
+                let li_string2 = '';
+                for (let magGroup = 1; magGroup <= 9; magGroup++) {
+                    li_string2 += '<li><a href="/magnitude/' + magGroup + '">Magnitude ' + magGroup + '</a></li>';
+                }
+
+                let li_string3 = '';
+                li_string3 += '<li><a href="/depth/1">Shallow (0-70 km)</a></li>';
+                li_string3 += '<li><a href="/depth/2">Intermediate (70-300 km)</a></li>';
+                li_string3 += '<li><a href="/depth/3">Deep (300-700 km)</a></li>';
+                        
+                response = data.replace('$$$LOCATION_LIST$$$', li_string);
+                response = response.replace('$$$MAGNITUDE_LIST$$$', li_string2);
+                response = response.replace('$$$DEPTH_LIST$$$', li_string3);
+                res.status(200).type('html').send(response);
             }
-
-            let li_string3 = '';
-            li_string3 += '<li><a href="/depth/1">Shallow (0-70 km)</a></li>';
-            li_string3 += '<li><a href="/depth/2">Intermediate (70-300 km)</a></li>';
-            li_string3 += '<li><a href="/depth/3">Deep (300-700 km)</a></li>';
-                      
-            response = data.replace('$$$LOCATION_LIST$$$', li_string);
-            response = response.replace('$$$MAGNITUDE_LIST$$$', li_string2);
-            response = response.replace('$$$DEPTH_LIST$$$', li_string3);
-            res.status(200).type('html').send(response);
         });
     }
 
@@ -127,40 +131,45 @@ app.get('/location/:loc', (req, res) => {
                 }
                 else {
                     
-                    fs.readFile(path.join(template, 'location.html'), {encoding: 'utf8'}, (err, data) => {
-                        let tr_string = '';
-                        let location = '';
-                        
-                        let magnitudes = [];
-                        let depths = [];
-                        
-                        for (let i=0; i < rows.length; i++) {
-                            tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td></tr>';
-                            location = rows[i].locationSource;
-                            magnitudes.push(rows[i].mag);
-                            depths.push(rows[i].depth);
+                    fs.readFile(path.join(template, 'location.html'), {encoding: 'utf8'}, (errFile, data) => {
+                        if (errFile) {
+                            res.status(500).type('txt').send('File read error');
                         }
+                        else {
+                            let tr_string = '';
+                            let location = '';
+                            
+                            let magnitudes = [];
+                            let depths = [];
+                            
+                            for (let i=0; i < rows.length; i++) {
+                                tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td></tr>';
+                                location = rows[i].locationSource;
+                                magnitudes.push(rows[i].mag);
+                                depths.push(rows[i].depth);
+                            }
 
-                        // build the prev/next links 
-                        let prevLink = '<a href="/location/' + prevLoc + '">Previous Location</a>';
-                        let nextLink = '<a href="/location/' + nextLoc + '">Next Location</a>';
+                            // build the prev/next links 
+                            let prevLink = '<a href="/location/' + prevLoc + '">Previous Location</a>';
+                            let nextLink = '<a href="/location/' + nextLoc + '">Next Location</a>';
 
-                        let homeLink = '<a href="/">Back to Home</a>';
+                            let homeLink = '<a href="/">Back to Home</a>';
 
-                        let imageSrc = '/images/earthquakeMap' + currentLocation.toUpperCase() + '.png';
-                        let imageAlt = 'An image of location ' + currentLocation.toUpperCase() + '.';
+                            let imageSrc = '/images/earthquakeMap' + currentLocation.toUpperCase() + '.png';
+                            let imageAlt = 'An image of location ' + currentLocation.toUpperCase() + '.';
 
-                        let response = data.replace('$$$LOCATION_ROWS$$$', tr_string);
-                        response = response.replace('$$$LOCATION$$$', location);
-                        response = response.replace('$$$TOTAL_COUNT$$$', rows.length);
-                        response = response.replace('$$$PREV_LINK$$$', prevLink);
-                        response = response.replace('$$$NEXT_LINK$$$', nextLink);
-                        response = response.replace('$$$HOME_LINK$$$', homeLink);
-                        response = response.replace('$$$MAGNITUDE_IMAGE_SRC$$$', imageSrc);
-                        response = response.replace('$$$MAGNITUDE_IMAGE_ALT$$$', imageAlt);
-                        response = response.replace('$$$MAGNITUDES$$$', JSON.stringify(magnitudes));
-                        response = response.replace('$$$DEPTHS$$$', JSON.stringify(depths));
-                        res.status(200).type('html').send(response);
+                            let response = data.replace('$$$LOCATION_ROWS$$$', tr_string);
+                            response = response.replace('$$$LOCATION$$$', location);
+                            response = response.replace('$$$TOTAL_COUNT$$$', rows.length);
+                            response = response.replace('$$$PREV_LINK$$$', prevLink);
+                            response = response.replace('$$$NEXT_LINK$$$', nextLink);
+                            response = response.replace('$$$HOME_LINK$$$', homeLink);
+                            response = response.replace('$$$MAGNITUDE_IMAGE_SRC$$$', imageSrc);
+                            response = response.replace('$$$MAGNITUDE_IMAGE_ALT$$$', imageAlt);
+                            response = response.replace('$$$MAGNITUDES$$$', JSON.stringify(magnitudes));
+                            response = response.replace('$$$DEPTHS$$$', JSON.stringify(depths));
+                            res.status(200).type('html').send(response);
+                        }
                     });
 
                 }
@@ -191,39 +200,44 @@ app.get('/magnitude/:mag', (req, res) => {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
-            fs.readFile(path.join(template, 'magnitude.html'), {encoding: 'utf8'}, (err, data) => {
-                let tr_string = '';
-                let magnitudeRange = 'Magnitude ' + lowerBound + '.0 - ' + upperBound + '.0 (exclusive)';
-                
-                let depths = [];
-                let magnitudes = [];
-                
-                for (let i=0; i < rows.length; i++) {
-                    tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
-                    
-                    depths.push(rows[i].depth);
-                    magnitudes.push(rows[i].mag);
+            fs.readFile(path.join(template, 'magnitude.html'), {encoding: 'utf8'}, (errFile, data) => {
+                if (errFile) {
+                    res.status(500).type('txt').send('File read error');
                 }
+                else {
+                    let tr_string = '';
+                    let magnitudeRange = 'Magnitude ' + lowerBound + '.0 - ' + upperBound + '.0 (exclusive)';
+                    
+                    let depths = [];
+                    let magnitudes = [];
+                    
+                    for (let i=0; i < rows.length; i++) {
+                        tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
+                        
+                        depths.push(rows[i].depth);
+                        magnitudes.push(rows[i].mag);
+                    }
 
-                // build the prev/next links 
-                let prevLink = '<a href="/magnitude/' + prevMag + '">Previous Magnitude</a>';
-                let nextLink = '<a href="/magnitude/' + nextMag + '">Next Magnitude</a>';
+                    // build the prev/next links 
+                    let prevLink = '<a href="/magnitude/' + prevMag + '">Previous Magnitude</a>';
+                    let nextLink = '<a href="/magnitude/' + nextMag + '">Next Magnitude</a>';
 
-                let homeLink = '<a href="/">Back to Home</a>';
+                    let homeLink = '<a href="/">Back to Home</a>';
 
-                let imageSrc = '/images/magnitudeChartM' + magGroup + '.png';
-                let imageAlt = 'An image of a magnitude of ' + magGroup + '.';
+                    let imageSrc = '/images/magnitudeChartM' + magGroup + '.png';
+                    let imageAlt = 'An image of a magnitude of ' + magGroup + '.';
 
-                let response = data.replace('$$$MAGNITUDE_ROWS$$$', tr_string);
-                response = response.replace('$$$MAGNITUDE$$$', magnitudeRange);
-                response = response.replace('$$$TOTAL_COUNT$$$', rows.length);
-                response = response.replace('$$$PREV_LINK$$$', prevLink);
-                response = response.replace('$$$NEXT_LINK$$$', nextLink);
-                response = response.replace('$$$HOME_LINK$$$', homeLink);
-                response = response.replace('$$$MAGNITUDE_IMAGE_SRC$$$', imageSrc);
-                response = response.replace('$$$MAGNITUDE_IMAGE_ALT$$$', imageAlt);
-                response = response.replace('$$$MAGNITUDES$$$', JSON.stringify(magnitudes));
-                res.status(200).type('html').send(response);
+                    let response = data.replace('$$$MAGNITUDE_ROWS$$$', tr_string);
+                    response = response.replace('$$$MAGNITUDE$$$', magnitudeRange);
+                    response = response.replace('$$$TOTAL_COUNT$$$', rows.length);
+                    response = response.replace('$$$PREV_LINK$$$', prevLink);
+                    response = response.replace('$$$NEXT_LINK$$$', nextLink);
+                    response = response.replace('$$$HOME_LINK$$$', homeLink);
+                    response = response.replace('$$$MAGNITUDE_IMAGE_SRC$$$', imageSrc);
+                    response = response.replace('$$$MAGNITUDE_IMAGE_ALT$$$', imageAlt);
+                    response = response.replace('$$$MAGNITUDES$$$', JSON.stringify(magnitudes));
+                    res.status(200).type('html').send(response);
+                }
             });
         }
     });
@@ -264,36 +278,41 @@ app.get('/depth/:dep', (req, res) => {
             res.status(500).type('txt').send('SQL Error');
         }
         else {
-            fs.readFile(path.join(template, 'depth.html'), {encoding: 'utf8'}, (err, data) => {
-                let tr_string = '';
-                
-                // Prepare data for charts
-                let depths = [];
-                
-                for (let i=0; i < rows.length; i++) {
-                    tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
-                    depths.push(rows[i].depth);
+            fs.readFile(path.join(template, 'depth.html'), {encoding: 'utf8'}, (errFile, data) => {
+                if (errFile) {
+                    res.status(500).type('txt').send('File read error');
                 }
+                else {
+                    let tr_string = '';
+                    
+                    // Prepare data for charts
+                    let depths = [];
+                    
+                    for (let i=0; i < rows.length; i++) {
+                        tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
+                        depths.push(rows[i].depth);
+                    }
 
-                // build the prev/next links 
-                let prevLink = '<a href="/depth/' + prevDepth + '">Previous Depth Group</a>';
-                let nextLink = '<a href="/depth/' + nextDepth + '">Next Depth Group</a>';
+                    // build the prev/next links 
+                    let prevLink = '<a href="/depth/' + prevDepth + '">Previous Depth Group</a>';
+                    let nextLink = '<a href="/depth/' + nextDepth + '">Next Depth Group</a>';
 
-                let homeLink = '<a href="/">Back to Home</a>';
+                    let homeLink = '<a href="/">Back to Home</a>';
 
-                let imageSrc = '/images/depth' + depthGroup + '.png';
-                let imageAlt = 'An image of ' + depthLabel + ' depth.';
+                    let imageSrc = '/images/depth' + depthGroup + '.png';
+                    let imageAlt = 'An image of ' + depthLabel + ' depth.';
 
-                let response = data.replace('$$$DEPTH_ROWS$$$', tr_string);
-                response = response.replace('$$$DEPTH$$$', depthLabel);
-                response = response.replace('$$$TOTAL_COUNT$$$', rows.length);
-                response = response.replace('$$$PREV_LINK$$$', prevLink);
-                response = response.replace('$$$NEXT_LINK$$$', nextLink);
-                response = response.replace('$$$HOME_LINK$$$', homeLink);
-                response = response.replace('$$$MAGNITUDE_IMAGE_SRC$$$', imageSrc);
-                response = response.replace('$$$MAGNITUDE_IMAGE_ALT$$$', imageAlt);
-                response = response.replace('$$$DEPTHS$$$', JSON.stringify(depths));
-                res.status(200).type('html').send(response);
+                    let response = data.replace('$$$DEPTH_ROWS$$$', tr_string);
+                    response = response.replace('$$$DEPTH$$$', depthLabel);
+                    response = response.replace('$$$TOTAL_COUNT$$$', rows.length);
+                    response = response.replace('$$$PREV_LINK$$$', prevLink);
+                    response = response.replace('$$$NEXT_LINK$$$', nextLink);
+                    response = response.replace('$$$HOME_LINK$$$', homeLink);
+                    response = response.replace('$$$MAGNITUDE_IMAGE_SRC$$$', imageSrc);
+                    response = response.replace('$$$MAGNITUDE_IMAGE_ALT$$$', imageAlt);
+                    response = response.replace('$$$DEPTHS$$$', JSON.stringify(depths));
+                    res.status(200).type('html').send(response);
+                }
             });
         }
     });
