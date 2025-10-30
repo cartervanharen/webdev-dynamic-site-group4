@@ -11,12 +11,8 @@ const root = path.join(__dirname, 'public');
 const template = path.join(__dirname, 'templates');
 
 const SQL_GET_ALL_LOCATIONS = 'SELECT DISTINCT locationSource FROM Earthquakes ORDER BY locationSource';
-const SQL_GET_ALL_MAGNITUDES = 'SELECT DISTINCT mag FROM Earthquakes LIMIT 50';
-const SQL_GET_ALL_DEPTHS = 'SELECT DISTINCT depth FROM Earthquakes LIMIT 50';
 const SQL_GET_EARTHQUAKES_BY_LOCATION = 'SELECT * FROM Earthquakes WHERE locationSource == ?';
-const SQL_GET_EARTHQUAKES_BY_MAGNITUDE = 'SELECT * FROM Earthquakes WHERE mag == ?';
 const SQL_GET_EARTHQUAKES_BY_MAGNITUDE_RANGE = 'SELECT * FROM Earthquakes WHERE mag >= ? AND mag < ?';
-const SQL_GET_EARTHQUAKES_BY_DEPTH = 'SELECT * FROM Earthquakes WHERE depth == ?';
 const SQL_GET_EARTHQUAKES_BY_DEPTH_RANGE = 'SELECT * FROM Earthquakes WHERE depth >= ? AND depth < ?';
 
 let app = express();
@@ -36,7 +32,6 @@ const db = new sqlite3.Database('./earthquakes.sqlite3', sqlite3.OPEN_READONLY, 
 app.get('/', (req, res) => {
     let asyncCount = 0;
     let dbRows1 = null;
-    let fileData = null;
     let response;
 
     let sendResponse = function () {
@@ -195,30 +190,15 @@ app.get('/magnitude/:mag', (req, res) => {
                 let tr_string = '';
                 let magnitudeRange = 'Magnitude ' + lowerBound + '.0 - ' + upperBound + '.0 (exclusive)';
                 
-                let locationCounts = {};
                 let depths = [];
                 let magnitudes = [];
                 
                 for (let i=0; i < rows.length; i++) {
                     tr_string += '<tr><td>' + rows[i].time + '</td><td>' + rows[i].latitude + '</td><td>' + rows[i].longitude + '</td><td>' + rows[i].depth + '</td><td>' + rows[i].mag + '</td><td>' + rows[i].place + '</td><td>' + rows[i].type + '</td><td>' + rows[i].locationSource +'</td></tr>';
                     
-                    if (locationCounts[rows[i].locationSource]) {
-                        locationCounts[rows[i].locationSource]++;
-                    } else {
-                        locationCounts[rows[i].locationSource] = 1;
-                    }
-                    
                     depths.push(rows[i].depth);
                     magnitudes.push(rows[i].mag);
                 }
-                
-                let locationArray = Object.keys(locationCounts).map(key => ({
-                    location: key,
-                    count: locationCounts[key]
-                })).sort((a, b) => b.count - a.count).slice(0, 10);
-                
-                let chartLocations = locationArray.map(item => item.location);
-                let chartCounts = locationArray.map(item => item.count);
 
                 // build the prev/next links 
                 let prevLink = '<a href="/magnitude/' + prevMag + '">Previous Magnitude</a>';
